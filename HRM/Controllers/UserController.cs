@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -41,6 +42,84 @@ namespace HRM.Controllers
             }
         }
 
+        [HttpPost]
+        public HttpResponseMessage UpdateUser()
+        {
+            try
+            {
+                var form = HttpContext.Current.Request.Form;
+
+                // Parsing userId
+                int userId;
+                if (!int.TryParse(form["id"], out userId))
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid userId");
+                }
+
+                // Extracting user data from the form
+                string name = form["name"];
+                string cnic = form["cnic"];
+                string mobile_num = form["mobile_num"];
+                string dob = form["dob"];
+                string gender = form["gender"];
+                string address = form["address"];
+                string password = form["password"];
+                string email = form["email"];
+
+                // Extracting uploaded image file
+                var file = HttpContext.Current.Request.Files["Image"];
+
+                // Current date and time
+                DateTime dt = DateTime.Now;
+
+                // Creating a directory for image storage
+                string path = HttpContext.Current.Server.MapPath("~/Images");
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                string fileData = null;
+                if (file != null && file.ContentLength > 0)
+                {
+                    // Generating a unique filename using timestamp and original filename
+                    fileData = $"{dt:yyyy_MM_dd_HH_mm_ss_fff}_{file.FileName}";
+
+                    // Saving the uploaded file to the specified path
+                    file.SaveAs(Path.Combine(path, fileData));
+                }
+
+                // Parsing date of birth
+                DateTime date = DateTime.ParseExact(dob, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                // Finding the user in the database
+                User u = db.Users.Find(userId);
+                if (u != null)
+                {
+                    // Updating user data
+                    u.name = name;
+                    u.cnic = cnic;
+                    u.email = email;
+                    u.mobile_num = mobile_num;
+                    u.cnic = cnic;
+                    u.dob = date;
+                    u.gender = gender;
+                    u.address = address;
+                    u.image = fileData ?? fileData; // If fileData is null, keep the existing Image value
+                    db.SaveChanges(); // Save changes to the database
+
+                    return Request.CreateResponse(HttpStatusCode.OK, "User data updated successfully");
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "User not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Error: {ex.Message}");
+            }
+        }
 
 
         //[HttpPost]
@@ -78,7 +157,6 @@ namespace HRM.Controllers
         //        {
         //            return Request.CreateResponse(HttpStatusCode.BadRequest, "User already exists");
         //        }
-
         //    }
         //    catch (Exception exp)
         //    {
@@ -97,9 +175,6 @@ namespace HRM.Controllers
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Email already exists");
                 }
-
-
-
                 //Insert Into User Table
                 var users = db.Users.Add(u);
                 db.SaveChanges();
@@ -140,6 +215,7 @@ namespace HRM.Controllers
             }
         }
 
+        [HttpGet]
         public HttpResponseMessage Assign()
         {
             try
