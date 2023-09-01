@@ -66,6 +66,7 @@
           <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="committee_id" Type="int" Nullable="false" />
           <Property Name="user_id" Type="int" Nullable="false" />
+          <Property Name="is_activated" Type="bit" />
         </EntityType>
         <EntityType Name="CommitteeRemarks">
           <Key>
@@ -185,6 +186,7 @@
           <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="committee_id" Type="Int32" Nullable="false" />
           <Property Name="user_id" Type="Int32" Nullable="false" />
+          <Property Name="is_activated" Type="Boolean" />
         </EntityType>
         <EntityType Name="CommitteeRemark">
           <Key>
@@ -306,6 +308,7 @@
           <EntitySetMapping Name="CommitteeMembers">
             <EntityTypeMapping TypeName="HRMModel.CommitteeMember">
               <MappingFragment StoreEntitySet="CommitteeMember">
+                <ScalarProperty Name="is_activated" ColumnName="is_activated" />
                 <ScalarProperty Name="id" ColumnName="id" />
                 <ScalarProperty Name="committee_id" ColumnName="committee_id" />
                 <ScalarProperty Name="user_id" ColumnName="user_id" />

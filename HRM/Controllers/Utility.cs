@@ -8,13 +8,9 @@ namespace HRM.Controllers
 {
     public class Utility
     {
-
-
-
       //
         public void AssignApplicantsForShortlisting(HRMEntities2 db)
         {
-
             try
             {
                 var clist = db.Committees.ToList();

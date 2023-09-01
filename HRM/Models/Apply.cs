@@ -20,8 +20,5 @@ namespace HRM.Models
         public string cv_path { get; set; }
         public System.DateTime apply_date { get; set; }
         public Nullable<int> member_id { get; set; }
-        public object Job { get; internal set; }
-        //public Job Job { get; set; }
-
     }
 }

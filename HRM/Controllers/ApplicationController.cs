@@ -109,11 +109,19 @@ namespace HRM.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetAllApplicationBymemberId(int member_id,string status)
+        public HttpResponseMessage GetAllApplicationBymemberId(int member_id, string status)
         {
             try
             {
-                var allApplications = db.Applies.Where(x => x.member_id == member_id && x.status==status).ToList();
+                var allApplications = db.Applies
+                    .Where(x => x.member_id == member_id && x.status == status)
+                    .Join(db.Users, apply => apply.user_id, user => user.id, (apply, user) => new
+                    {
+                        Application = apply,
+                        ApplicantName = user.name // Change this to the actual property name in your Users table
+            })
+                    .ToList();
+
                 return Request.CreateResponse(HttpStatusCode.OK, allApplications);
             }
             catch (Exception exp)
@@ -121,6 +129,65 @@ namespace HRM.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
             }
         }
+        [HttpGet]
+        public HttpResponseMessage GetAllShortListedApplications(int job_id, string status)
+        {
+            try
+            {
+                var allApplications = db.Applies
+                    .Where(x => x.job_id == job_id && x.status == status)
+                    .Join(db.Users, apply => apply.user_id, user => user.id, (apply, user) => new
+                    {
+                        Application = apply,
+                        ApplicantName = user.name // Change this to the actual property name in your Users table
+                    })
+                    .ToList();
+
+                return Request.CreateResponse(HttpStatusCode.OK, allApplications);
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
+            }
+        }
+        [HttpPost]
+        public HttpResponseMessage UpdateStatusForUsers(string user_ids, int job_id, string status)
+        {
+            try
+            {
+                var userIdsList = user_ids.Split(',').Select(int.Parse).ToList();
+
+                var recordsToUpdate = db.Applies
+                    .Where(x => userIdsList.Contains(x.user_id) && x.job_id == job_id)
+                    .ToList();
+
+                if (recordsToUpdate.Count == 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "None of the users applied for the job");
+                }
+                else
+                {
+                    foreach (var record in recordsToUpdate)
+                    {
+                        record.status = status;
+                    }
+
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, "Status Updated Successfully for the selected users");
+                }
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
+            }
+        }
+
+
+
+
+
+
+
 
 
     }

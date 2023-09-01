@@ -229,5 +229,30 @@ namespace HRM.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
             }
         }
+
+        [HttpPost]
+        public HttpResponseMessage DeactivateMember(int c_id, int u_id)
+        {
+            try
+            {
+                var isRecord = db.CommitteeMembers.Where(x => x.committee_id == c_id && x.user_id == u_id).FirstOrDefault();
+                if (isRecord == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "This user   does not exist in the commitee");
+                }
+                else
+                {
+                    isRecord.is_activated = false;
+                    db.Entry(isRecord).State = System.Data.Entity.EntityState.Modified;
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, " the user is deactivated Sucessfully");
+                }
+            }
+            catch (Exception exp)
+            {
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
+            }
+        }
     }
 }

@@ -111,14 +111,31 @@ namespace HRM.Controllers
         {
             try
             {
-                var remarks = db.CommitteeRemarks.Where(x => x.applicant_id == a_id && x.job_id == j_id).FirstOrDefault();
-                return Request.CreateResponse(HttpStatusCode.OK, remarks);
+                var result = db.CommitteeRemarks
+                    .Where(x => x.applicant_id == a_id && x.job_id == j_id)
+                    .Join(db.Users,
+                        remarks => remarks.committee_member_id,
+                        committeeMember => committeeMember.id,
+                        (remarks, committeeMember) => new
+                        {
+                            remarks.applicant_id,
+                            remarks.job_id,
+                            remarks.remark,
+                            CommitteeMemberId = committeeMember.id, // Include the CommitteeMemberId
+                    CommitteeMemberName = committeeMember.name
+                        })
+                    .ToList();
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception exp)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
             }
         }
+
+
+
         [HttpGet]
         public HttpResponseMessage GetLastCommitteeId()
         {
@@ -383,6 +400,31 @@ namespace HRM.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
             }
         }
+        [HttpPost]
+        public HttpResponseMessage ChangeApplicantStatus(int a_id,int j_id)
+        {
+            try
+            {
+                var isRecord = db.Applies.Where(x=>x.user_id==a_id &&x.job_id==j_id).FirstOrDefault();
+                if (isRecord == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "This  applicant does not exist");
+                }
+                else
+                {
+                    isRecord.status = "Interview";
+                    db.Entry(isRecord).State = System.Data.Entity.EntityState.Modified;
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, " Interview completed  Sucessfully");
+                }
+            }
+            catch (Exception exp)
+            {
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
+            }
+        }
+
         //////////////////////////////////////// INCOMPLETE///////////////////////////////////////////
         [HttpPost]
         public HttpResponseMessage UpdateCommitteeRemarks(CommitteeRemark remarks)

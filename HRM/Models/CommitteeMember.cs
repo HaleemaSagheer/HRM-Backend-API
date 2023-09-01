@@ -17,5 +17,6 @@ namespace HRM.Models
         public int id { get; set; }
         public int committee_id { get; set; }
         public int user_id { get; set; }
+        public Nullable<bool> is_activated { get; set; }
     }
 }
