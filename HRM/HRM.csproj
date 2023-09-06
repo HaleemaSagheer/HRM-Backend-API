@@ -171,6 +171,7 @@
     <Compile Include="Controllers\JobsController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\Utility.cs" />
+    <Compile Include="Controllers\Utility1.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

@@ -17,5 +17,6 @@ namespace HRM.Models
         public int id { get; set; }
         public string title { get; set; }
         public int user_id { get; set; }
+        public string committee_type { get; set; }
     }
 }

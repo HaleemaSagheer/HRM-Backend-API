@@ -336,7 +336,7 @@ namespace HRM.Controllers
                 var IsREcord = db.CommitteeMembers.Find(member.committee_id);
                 if(IsREcord==null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "Committee does not exist ");
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "Committee does not exist");
                 }
                 else
                 {
@@ -505,20 +505,66 @@ namespace HRM.Controllers
                     committeeDetail.CommitteeHead = committeeHead;
                 }
 
-                // Get all committee members
-                var committeeMemberIds = db.CommitteeMembers.Where(cm => cm.committee_id == committeeId).Select(cm => cm.user_id).ToList();
-                var committeeMembers = db.Users.Where(u => committeeMemberIds.Contains(u.id) && u.id != committeeHeadId).ToList();
-                committeeDetail.CommitteeMembers = committeeMembers;
+                // Get all committee members (including deactivated)
+                var committeeMembers = db.CommitteeMembers
+                    .Where(cm => cm.committee_id == committeeId)
+                    .Select(cm => new
+                    {
+                        cm.user_id,
+                        cm.is_activated
+                    })
+                    .ToList();
+
+                // Create a list to store members with activation status
+                var committeeMembersWithStatus = new List<User>();
+
+                foreach (var memberInfo in committeeMembers)
+                {
+                    var member = db.Users.Find(memberInfo.user_id);
+                    if (member != null)
+                    {
+                        // Determine the activation status
+                        string activationStatus;
+                        if (memberInfo.is_activated == true)
+                        {
+                            activationStatus = "Activated";
+                        }
+                        else if (memberInfo.is_activated == false)
+                        {
+                            activationStatus = "Deactivated";
+                        }
+                        else
+                        {
+                            activationStatus = "No Specific Status";
+                        }
+
+                        // Store the activation status as a custom property
+                        member.CustomActivationStatus = activationStatus;
+                        committeeMembersWithStatus.Add(member);
+                    }
+                }
+
+                // Exclude the committee head from the list of members
+                if (committeeHead != null)
+                {
+                    committeeMembersWithStatus = committeeMembersWithStatus
+                        .Where(member => member.id != committeeHead.id)
+                        .ToList();
+                }
+
+                committeeDetail.CommitteeMembers = committeeMembersWithStatus;
 
                 // Get assigned job IDs
-                var assignedJobIds = db.CommitteeJobs.Where(cj => cj.committee_id == committeeId)
-                                             .Select(cj => cj.job_id)
-                                             .ToList();
+                var assignedJobIds = db.CommitteeJobs
+                    .Where(cj => cj.committee_id == committeeId)
+                    .Select(cj => cj.job_id)
+                    .ToList();
 
                 // Retrieve job titles using LINQ to Entities
-                var assignedJobTitles = db.Jobs.Where(j => assignedJobIds.Contains(j.id))
-                                               .Select(j => j.title)
-                                               .ToList();
+                var assignedJobTitles = db.Jobs
+                    .Where(j => assignedJobIds.Contains(j.id))
+                    .Select(j => j.title)
+                    .ToList();
 
                 committeeDetail.AssignedJobTitles = assignedJobTitles;
 
@@ -533,21 +579,7 @@ namespace HRM.Controllers
 
 
 
-        //        var assignedJobs = db.CommitteeJobs.Where(cj => cj.committee_id == committeeId).ToList();
-        //        committeeDetail.AssignedJobs = assignedJobs;
-
-        //        // Get assigned job titles
-        //        var assignedJobTitles = assignedJobs.Select(j => j.Job.title).ToList();
-        //        committeeDetail.AssignedJobTitles = assignedJobTitles;
-
-        //        return Request.CreateResponse(HttpStatusCode.OK, committeeDetail);
-        //    }
-        //    catch (Exception exp)
-        //    {
-        //        return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
-        //    }
 
 
-        //}
     }
 }

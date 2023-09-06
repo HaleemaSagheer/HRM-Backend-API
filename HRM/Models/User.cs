@@ -25,5 +25,6 @@ namespace HRM.Models
         public string image { get; set; }
         public string gender { get; set; }
         public string cnic { get; set; }
+        public string CustomActivationStatus { get; internal set; }
     }
 }

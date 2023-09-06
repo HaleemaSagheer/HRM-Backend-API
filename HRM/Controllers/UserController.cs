@@ -20,7 +20,8 @@ namespace HRM.Controllers
             try
             {
 
-                var util = new Utility();
+                //var util = new Utility();
+                var util = new Utility1();
                 util.AssignApplicantsForShortlisting(db);
 
                 User login = db.Users.FirstOrDefault(x => x.email == email && x.password == password);
@@ -185,7 +186,6 @@ namespace HRM.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-   
 
         [HttpGet]
         public HttpResponseMessage GetAllEmployees()
@@ -193,6 +193,20 @@ namespace HRM.Controllers
             try
             {
                 var employees = db.Users?.Where(x => x.role == "Employee").OrderBy(x => x.name).ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, employees);
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
+            }
+        }
+        //TO GET ALL THE EMPLOYEES WHO ARE NOT IN THE MEMBER OF COMITTEE 
+        [HttpGet]
+        public HttpResponseMessage GetAllactivatedEmployee(int e_id)
+        {
+            try
+            {
+                var employees = db.Users?.Where(x => x.role == "Employee"&& x.id!=e_id).OrderBy(x => x.name).ToList();
                 return Request.CreateResponse(HttpStatusCode.OK, employees);
             }
             catch (Exception exp)
@@ -220,7 +234,8 @@ namespace HRM.Controllers
         {
             try
             {
-                var util = new Utility();
+                //var util = new Utility();
+                var util = new Utility1();
                 util.AssignApplicantsForShortlisting(db);
                 return Request.CreateResponse(HttpStatusCode.OK, "Done");
             }
@@ -232,27 +247,64 @@ namespace HRM.Controllers
 
         [HttpPost]
         public HttpResponseMessage DeactivateMember(int c_id, int u_id)
+
         {
             try
-            {
-                var isRecord = db.CommitteeMembers.Where(x => x.committee_id == c_id && x.user_id == u_id).FirstOrDefault();
-                if (isRecord == null)
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotFound, "This user   does not exist in the commitee");
-                }
-                else
-                {
-                    isRecord.is_activated = false;
-                    db.Entry(isRecord).State = System.Data.Entity.EntityState.Modified;
-                    db.SaveChanges();
-                    return Request.CreateResponse(HttpStatusCode.OK, " the user is deactivated Sucessfully");
-                }
-            }
-            catch (Exception exp)
+
             {
 
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
+                var isRecord = db.CommitteeMembers.Where(x => x.committee_id == c_id && x.user_id == u_id).FirstOrDefault();
+
+                if (isRecord == null)
+
+                {
+
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "This user   does not exist in the commitee");
+
+                }
+
+                else
+
+                {
+
+                    if(isRecord.is_activated == false)
+                    {
+                        isRecord.is_activated = true;
+                        db.Entry(isRecord).State = System.Data.Entity.EntityState.Modified;
+
+                        db.SaveChanges();
+
+                        return Request.CreateResponse(HttpStatusCode.OK, " the user is Activated again Sucessfully");
+                    }
+                    else
+                    {
+                        isRecord.is_activated = false;
+                        db.Entry(isRecord).State = System.Data.Entity.EntityState.Modified;
+
+                        db.SaveChanges();
+
+                        return Request.CreateResponse(HttpStatusCode.OK, " the user is deactivated Sucessfully");
+
+                    }
+                    
+
+                   
+
+                }
+
             }
+
+            catch (Exception exp)
+
+            {
+
+
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
+
+            }
+
         }
+       
     }
 }

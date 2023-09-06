@@ -50,6 +50,7 @@
           <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="title" Type="nvarchar" MaxLength="20" Nullable="false" />
           <Property Name="user_id" Type="int" Nullable="false" />
+          <Property Name="committee_type" Type="nvarchar" MaxLength="20" />
         </EntityType>
         <EntityType Name="CommitteeJob">
           <Key>
@@ -170,6 +171,7 @@
           <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="title" Type="String" MaxLength="20" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="user_id" Type="Int32" Nullable="false" />
+          <Property Name="committee_type" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="CommitteeJob">
           <Key>
@@ -290,6 +292,7 @@
           <EntitySetMapping Name="Committees">
             <EntityTypeMapping TypeName="HRMModel.Committee">
               <MappingFragment StoreEntitySet="Committee">
+                <ScalarProperty Name="committee_type" ColumnName="committee_type" />
                 <ScalarProperty Name="id" ColumnName="id" />
                 <ScalarProperty Name="title" ColumnName="title" />
                 <ScalarProperty Name="user_id" ColumnName="user_id" />

@@ -21,7 +21,7 @@ namespace HRM.Controllers
 
                     if (db.CommitteeJobs.Where(a => a.committee_id == c.id).Count() == 0)
                         continue;
-                var members = db.CommitteeMembers.Where(m => m.committee_id == c.id).ToList();
+                var members = db.CommitteeMembers.Where(m => m.committee_id == c.id && m.is_activated==true).ToList();
                     if (members.Count() == 0)
                         continue;
                 var unassigned = allUnAssigned.Join(db.CommitteeJobs.Where(a => a.committee_id == c.id), b => b.job_id, d => d.job_id, (b, d) => b);
