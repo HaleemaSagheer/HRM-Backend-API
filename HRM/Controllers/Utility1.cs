@@ -12,74 +12,44 @@ namespace HRM.Controllers
         {
             try
             {
-                var clist = db.Committees.Where(x=>x.committee_type== "Scrutiny").ToList();
+                // Select the Scrutiny committee
+                var scrutinyCommittee = db.Committees.FirstOrDefault(c => c.committee_type == "Scrutiny");
 
-                foreach (var c in clist)
+                if (scrutinyCommittee != null)
                 {
-                    var allUnAssigned = db.Applies.Where(a => a.member_id == null);
+                    var scrutinyMembers = db.CommitteeMembers
+                        .Where(m => m.committee_id == scrutinyCommittee.id && m.is_activated == true)
+                        .ToList();
 
-                    if (db.CommitteeJobs.Where(a => a.committee_id == c.id).Count() == 0)
-                        continue;
-                    var members = db.CommitteeMembers.Where(m => m.committee_id == c.id && m.is_activated == true).ToList();
-                    if (members.Count() == 0)
-                        continue;
-                   
-                    var total = allUnAssigned.Count();
-                    var memCount = members.Count() + 1;
-                    var remainder = total % memCount;
-                    var individualCount = total / memCount;
+                    var allUnAssigned = db.Applies.Where(a => a.member_id == null).ToList();
+                    var totalCVs = allUnAssigned.Count;
+                    var memberCount = scrutinyMembers.Count;
 
-                    var selectedUnassigned = allUnAssigned.Where(a => a.member_id == null).Take(individualCount);
-                    foreach (var ap in selectedUnassigned)
+                    if (memberCount > 0 && totalCVs > 0)
                     {
-                        ap.member_id = c.user_id;
-                        var rec = db.Applies.First(x => x.job_id == ap.job_id && x.user_id == ap.user_id);
-                        rec.member_id = c.user_id;
-                    }
+                        var cvPerMember = totalCVs / memberCount;
+                        var remainder = totalCVs % memberCount;
+                        var memberIndex = 0;
 
-                    db.SaveChanges();
-
-
-                    foreach (var m in members)
-                    {
-                        allUnAssigned = db.Applies.Where(a => a.member_id == null);
-
-                       // unassigned = allUnAssigned.Join(db.CommitteeJobs.Where(a => a.committee_id == c.id), b => b.job_id, d => d.job_id, (b, d) => b);
-
-                        selectedUnassigned = allUnAssigned.Where(a => a.member_id == null).Take(individualCount);
-                        foreach (var ap in selectedUnassigned)
+                        foreach (var cv in allUnAssigned)
                         {
-                            ap.member_id = m.user_id;
-                            var rec = db.Applies.First(x => x.job_id == ap.job_id && x.user_id == ap.user_id);
-                            rec.member_id = m.user_id;
+                            var member = scrutinyMembers[memberIndex];
+                            cv.member_id = member.user_id;
+
+                            // Move to the next member, and loop back to the first if needed
+                            memberIndex = (memberIndex + 1) % memberCount;
+
+                            if (remainder > 0)
+                            {
+                                // Distribute one remainder CV to each member
+                                cv.member_id = member.user_id;
+                                remainder--;
+                            }
                         }
 
                         db.SaveChanges();
-
-                    }
-
-                    if (remainder != 0)
-                    {
-                        allUnAssigned = db.Applies.Where(a => a.member_id == null);
-
-                        //unassigned = allUnAssigned.Join(db.CommitteeJobs.Where(a => a.committee_id == c.id), b => b.job_id, d => d.job_id, (b, d) => b);
-
-                        var firstmem = members.FirstOrDefault();
-                        if (firstmem != null)
-                        {
-                            selectedUnassigned = allUnAssigned.Where(a => a.member_id == null).Take(remainder);
-
-                            foreach (var ap in selectedUnassigned)
-                            {
-                                ap.member_id = firstmem.user_id;
-                                var rec = db.Applies.First(x => x.job_id == ap.job_id && x.user_id == ap.user_id);
-                                rec.member_id = firstmem.user_id;
-                            }
-
-                        }
                     }
                 }
-                db.SaveChanges();
             }
             catch (Exception ex)
             {
