@@ -63,6 +63,33 @@ namespace HRM.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
             }
         }
+        //Get All that committeess in which  you are Scrutiny
+        [HttpGet]
+        public HttpResponseMessage GetAllScrutinyCommitteesByEmployeeId(int user_id)
+        {
+            try
+            {
+                var scrutinyCommittees = (from c in db.Committees
+                                          where c.committee_type == "Scrutiny"
+                                          join cm in db.CommitteeMembers on c.id equals cm.committee_id into members
+                                          join ch in db.Committees on c.id equals ch.id into heads
+                                          select new
+                                          {
+                                              CommitteeId = c.id,
+                                              CommitteeTitle = c.title,
+                                              CommitteeType = c.committee_type,
+                                              Members = members.Select(m => m.user_id),
+                                              Heads = heads.Select(h => h.user_id)
+                                          }).ToList();
+
+
+                return Request.CreateResponse(HttpStatusCode.OK, scrutinyCommittees);
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
+            }
+        }
 
         [HttpGet]
         public HttpResponseMessage GetSingleCommittee(int id)
@@ -385,14 +412,38 @@ namespace HRM.Controllers
         }
 
         [HttpPost]
-        public HttpResponseMessage AddCommitteeRemarks( CommitteeRemark remarks)
+        public HttpResponseMessage AddShortListerRemarks( int j_id,int u_id,int mem_id,String Remarks)
+        {
+            try
+            {
+                var isRecord = db.Applies.Where(x => x.user_id == u_id && x.job_id == j_id&& x.member_id==mem_id).FirstOrDefault();
+                if (isRecord == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, "This member can't give comment");
+                }
+                else
+                {
+                    isRecord.Remarks = Remarks;
+                    db.Entry(isRecord).State = System.Data.Entity.EntityState.Modified;
+                    db.SaveChanges();
+                    return Request.CreateResponse(HttpStatusCode.OK, " Your Comments  Added   Sucessfully");
+                }
+            }
+            catch (Exception exp)
+            {
+
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp.Message);
+            }
+        }
+        [HttpPost]
+        public HttpResponseMessage AddCommitteeRemarks(CommitteeRemark remarks)
         {
             try
             {
                 db.CommitteeRemarks.Add(remarks);
                 db.SaveChanges();
-                return Request.CreateResponse(HttpStatusCode.OK, "Commitee Member with Id    "+ remarks.committee_member_id+
-                    "Added his remarks for Applicant with Id   "+remarks.applicant_id);
+                return Request.CreateResponse(HttpStatusCode.OK, "Commitee Member with Id    " + remarks.committee_member_id +
+                    "Added his remarks for Applicant with Id   " + remarks.applicant_id);
             }
             catch (Exception exp)
             {

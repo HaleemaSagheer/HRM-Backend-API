@@ -8,32 +8,12 @@ namespace HRM.Controllers
 {
     public class Utility2
     {
-        //public void AssignApplicantsForShortlisting(HRMEntities2 db)
-        //{
-        //    try
-        //    {
-        //        //var clist = db.Committees.Where(x => x.committee_type == "Scrutiny").ToList();
-
-        //        //foreach (var c in clist)
-        //        //{
-        //        //    var allUnAssigned = db.Applies.Where(a => a.member_id == null);
-        //        //    var members = db.CommitteeMembers.Where(m => m.committee_id == c.id && m.is_activated == true).ToList();
-        //        //}
-        //        var result = db.Applies.Where(cv => cv.member_id == null);
-        //        var unscrutinized = result.Count();
-        //        var clist = db.Committees.Where(x => x.committee_type == "Scrutiny").FirstOrDefault();
-        //        int committee_member_Count = db.CommitteeMembers.Where(c => c.committee_id == clist.id).Count();
-
-        //    catch (Exception)
-        //    {
-
-        //        throw;
-        //    }
-        //}
+        
         public void AssignApplicantsForShortlisting(HRMEntities2 db)
         {
             try
             {
+                //var clist = db.Committees.Where(c => c.committee_type=="Scrutiny").ToList();
                 var clist = db.Committees.ToList();
 
                 foreach (var c in clist)
@@ -45,9 +25,7 @@ namespace HRM.Controllers
                         .ToList();
 
                     // Load related User data for sorting
-                    allUnAssigned = allUnAssigned
-                        .OrderBy(a => db.Users.FirstOrDefault(u => u.id == a.user_id)?.name)
-                        .ToList();
+                    allUnAssigned = allUnAssigned.OrderBy(a => db.Users.FirstOrDefault(u => u.id == a.user_id)?.name).ToList();
 
 
                     if (db.CommitteeJobs.Where(a => a.committee_id == c.id).Count() == 0)
@@ -61,7 +39,9 @@ namespace HRM.Controllers
                     var remainder = total % memCount;
                     var individualCount = total / memCount;
 
-                    var selectedUnassigned = allUnAssigned.Where(a => a.member_id == null).Take(individualCount);
+                    // var selectedUnassigned = allUnAssigned.Where(a => a.member_id == null).Take(individualCount);
+                     var selectedUnassigned = allUnAssigned.Where(a => a.member_id == null).OrderBy(a => db.Users.FirstOrDefault(u => u.id == a.user_id)?.name).Take(individualCount);
+
                     foreach (var ap in selectedUnassigned)
                     {
                         ap.member_id = c.user_id;

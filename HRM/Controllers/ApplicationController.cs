@@ -121,6 +121,7 @@ namespace HRM.Controllers
                         ApplicantName = user.name // Change this to the actual property name in your Users table
             })
                     .ToList();
+               
 
                 return Request.CreateResponse(HttpStatusCode.OK, allApplications);
             }

@@ -115,6 +115,27 @@ namespace HRM.Controllers
             }
         }
         [HttpGet]
+        public HttpResponseMessage GetJobIdByCommitteeId(int c_id)
+        {
+            try
+            {
+                var job = db.CommitteeJobs.Where(x => x.committee_id==c_id).FirstOrDefault();
+                if(job!=null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, job.job_id);
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, 0);
+                }
+            }
+            catch (Exception exp)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, exp);
+            }
+        }
+
+        [HttpGet]
         public HttpResponseMessage GetJobById( int j_id)
         {
             try

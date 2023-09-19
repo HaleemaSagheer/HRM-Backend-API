@@ -20,8 +20,8 @@ namespace HRM.Controllers
             try
             {
 
+                var util = new Utility();
                 //var util = new Utility();
-                var util = new Utility2();
                 util.AssignApplicantsForShortlisting(db);
 
                 User login = db.Users.FirstOrDefault(x => x.email == email && x.password == password);
@@ -235,7 +235,7 @@ namespace HRM.Controllers
             try
             {
                 //var util = new Utility();
-                var util = new Utility2();
+                var util = new Utility();
                 util.AssignApplicantsForShortlisting(db);
                 return Request.CreateResponse(HttpStatusCode.OK, "Done");
             }

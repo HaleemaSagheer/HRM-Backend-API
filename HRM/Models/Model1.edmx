@@ -16,6 +16,7 @@
           <Property Name="cv_path" Type="nvarchar" MaxLength="100" Nullable="false" />
           <Property Name="apply_date" Type="date" Nullable="false" />
           <Property Name="member_id" Type="int" />
+          <Property Name="Remarks" Type="nvarchar" MaxLength="200" />
         </EntityType>
         <EntityType Name="ApplyEducation">
           <Key>
@@ -137,6 +138,7 @@
           <Property Name="cv_path" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="apply_date" Type="DateTime" Nullable="false" Precision="0" />
           <Property Name="member_id" Type="Int32" />
+          <Property Name="Remarks" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="ApplyEducation">
           <Key>
@@ -252,6 +254,7 @@
           <EntitySetMapping Name="Applies">
             <EntityTypeMapping TypeName="HRMModel.Apply">
               <MappingFragment StoreEntitySet="Apply">
+                <ScalarProperty Name="Remarks" ColumnName="Remarks" />
                 <ScalarProperty Name="member_id" ColumnName="member_id" />
                 <ScalarProperty Name="job_id" ColumnName="job_id" />
                 <ScalarProperty Name="user_id" ColumnName="user_id" />
